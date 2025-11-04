@@ -5,5 +5,5 @@ GPIO.setmode(GPIO.BCM)
 
 GPIO.setup(2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-while true:
+while True:
     print(GPIO.input(2))
