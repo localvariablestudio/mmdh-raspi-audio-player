@@ -13,3 +13,6 @@ def event_catch():
     print('Button down')
 
 GPIO.add_event_detect(pin_in, GPIO.FALLING, callback=event_catch)
+
+while True:
+    pass
