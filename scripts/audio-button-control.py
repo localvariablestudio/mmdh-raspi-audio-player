@@ -12,7 +12,7 @@ GPIO.setup(pin_in, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 def event_catch(ch):
     print('Button down')
 
-GPIO.add_event_detect(pin_in, GPIO.FALLING, callback=event_catch)
+GPIO.add_event_detect(pin_in, GPIO.FALLING, callback=event_catch, bouncetime=200)
 
 while True:
     pass
