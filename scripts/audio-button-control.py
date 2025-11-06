@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 import alsaaudio
 import wave
+import threading
 
 # Global GPIO config
 GPIO.setmode(GPIO.BCM)
@@ -8,18 +9,16 @@ GPIO.setwarnings(False)
 
 # Audio control
 play_status = False
+playback_thread = None  # Track the playback thread
 
 # Pins config
 btn1 = [2, 3]
 GPIO.setup(btn1[0], GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(btn1[1], GPIO.OUT, initial=GPIO.LOW)
 
-def event_catch(ch):
+def play_audio():
+    """Play audio in a separate thread, checking play_status periodically"""
     global play_status
-    play_status = not play_status
-    print('Play status: ', play_status)
-    GPIO.output(btn1[1], play_status)
-    # Example for playing a WAV file
     try:
         # Open the WAV file
         f = wave.open('../assets/audio-test.wav', 'rb') 
@@ -31,10 +30,14 @@ def event_catch(ch):
 
         # Play the audio data
         data = f.readframes(1024)
-        while data:
+        while data and play_status:  # Check play_status in the loop
             out.write(data)
             data = f.readframes(1024)
-
+        
+        # Clean up if playback was stopped
+        if not play_status:
+            print("Playback stopped by user")
+        
         f.close()
         out.close()
 
@@ -44,6 +47,24 @@ def event_catch(ch):
         print("Error: 'your_audio_file.wav' not found. Please provide a valid path.")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+
+def event_catch(ch):
+    global play_status, playback_thread
+    
+    play_status = not play_status
+    print('Play status: ', play_status)
+    GPIO.output(btn1[1], play_status)
+    
+    if play_status:
+        # Start playback in a new thread
+        if playback_thread is not None and playback_thread.is_alive():
+            # If a thread is already running, wait for it to finish (should be quick)
+            pass
+        playback_thread = threading.Thread(target=play_audio, daemon=True)
+        playback_thread.start()
+    else:
+        # play_status is False, the playback loop will check this and stop
+        print("Stopping playback...")
 
 GPIO.add_event_detect(btn1[0], GPIO.FALLING, callback=event_catch, bouncetime=100)
 
