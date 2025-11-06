@@ -22,7 +22,7 @@ def event_catch(ch):
     # Example for playing a WAV file
     try:
         # Open the WAV file
-        f = wave.open('./assets/audio-test.wav', 'rb') 
+        f = wave.open('../assets/audio-test.wav', 'rb') 
 
         # Initialize a PCM device for playback
         # 'default' refers to the default sound card and device
