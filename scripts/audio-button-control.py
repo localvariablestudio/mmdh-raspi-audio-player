@@ -27,13 +27,7 @@ def event_catch(ch):
         # Initialize a PCM device for playback
         # 'default' refers to the default sound card and device
         # You can specify a different device using 'hw:CARD=0,DEV=0' format
-        out = alsaaudio.PCM(alsaaudio.PCM_PLAYBACK, alsaaudio.PCM_NORMAL, 'default')
-
-        # Set PCM device parameters
-        out.setchannels(f.getnchannels())
-        out.setrate(f.getframerate())
-        out.setformat(alsaaudio.PCM_FORMAT_S16_LE) # Adjust format as needed
-        out.setperiodsize(1024) # Buffer size
+        out = alsaaudio.PCM(channels=f.getnchannels(), rate=f.getframerate(), format=alsaaudio.PCM_FORMAT_S16_LE, periodsize=1024, alsaaudio.PCM_PLAYBACK, alsaaudio.PCM_NORMAL, 'default')
 
         # Play the audio data
         data = f.readframes(1024)
