@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import alsaaudio
+import wave
 
 # Global GPIO config
 GPIO.setmode(GPIO.BCM)
