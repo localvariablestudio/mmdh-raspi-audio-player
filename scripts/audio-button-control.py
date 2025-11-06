@@ -19,6 +19,37 @@ def event_catch(ch):
     play_status = not play_status
     print('Play status: ', play_status)
     GPIO.output(btn1[1], play_status)
+    # Example for playing a WAV file
+    try:
+        # Open the WAV file
+        f = wave.open('./assets/audio-test.wav', 'rb') 
+
+        # Initialize a PCM device for playback
+        # 'default' refers to the default sound card and device
+        # You can specify a different device using 'hw:CARD=0,DEV=0' format
+        out = alsaaudio.PCM(alsaaudio.PCM_PLAYBACK, alsaaudio.PCM_NORMAL, 'default')
+
+        # Set PCM device parameters
+        out.setchannels(f.getnchannels())
+        out.setrate(f.getframerate())
+        out.setformat(alsaaudio.PCM_FORMAT_S16_LE) # Adjust format as needed
+        out.setperiodsize(1024) # Buffer size
+
+        # Play the audio data
+        data = f.readframes(1024)
+        while data:
+            out.write(data)
+            data = f.readframes(1024)
+
+        f.close()
+        out.close()
+
+    except alsaaudio.ALSAAudioError as e:
+        print(f"Error during audio playback: {e}")
+    except FileNotFoundError:
+        print("Error: 'your_audio_file.wav' not found. Please provide a valid path.")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
 
 GPIO.add_event_detect(btn1[0], GPIO.FALLING, callback=event_catch, bouncetime=100)
 
