@@ -21,7 +21,7 @@ def play_audio():
     global play_status
     try:
         # Open the WAV file
-        f = wave.open('../assets/audio-test.wav', 'rb') 
+        f = wave.open('../assets/audio-test-2.wav', 'rb') 
 
         # Initialize a PCM device for playback
         # 'default' refers to the default sound card and device
