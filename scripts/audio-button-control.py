@@ -49,6 +49,7 @@ def play_audio():
         print(f"An unexpected error occurred: {e}")
 
 def event_catch(ch):
+    print('Button: ', ch, ' activated.')
     global play_status, playback_thread
     
     play_status = not play_status
