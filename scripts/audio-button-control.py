@@ -26,9 +26,9 @@ buttons = [
     [2, 3],
     [4, 5],
     [6, 7],
-    # [8, 9],
-    # [10, 11],
-    # [16, 23]
+    [8, 9],
+    [10, 11],
+    [16, 23]
 ]
 
 buttonsDict = {
@@ -41,8 +41,9 @@ buttonsDict = {
 }
 
 for i in range(len(buttons)):
-    GPIO.setup(buttons[i][0], GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(buttons[i][1], GPIO.OUT, initial=GPIO.LOW)    
+    print(buttons[i][0])
+    # GPIO.setup(buttons[i][0], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    # GPIO.setup(buttons[i][1], GPIO.OUT, initial=GPIO.LOW)    
 
 def play_audio():
     """Play audio in a separate thread, checking play_status periodically"""
@@ -110,8 +111,8 @@ def event_catch(ch):
     #     # play_status is False, the playback loop will check this and stop
     #     print("Stopping playback...")
 
-for i in range(len(buttons)):
-    GPIO.add_event_detect(buttons[i][0], GPIO.FALLING, callback=event_catch, bouncetime=100)
+# for i in range(len(buttons)):
+#     GPIO.add_event_detect(buttons[i][0], GPIO.FALLING, callback=event_catch, bouncetime=100)
 
 while True:
     pass
