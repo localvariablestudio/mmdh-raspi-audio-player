@@ -83,7 +83,7 @@ def event_catch(ch):
     if prevCh == 0:
         play_status[index] = True
     elif prevCh == ch:
-        play_status[index] = False
+        play_status[index] = not play_status[index]
     else:
         prevIndex = buttonsDict[prevCh]
         play_status[index] = True
