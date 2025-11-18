@@ -77,17 +77,15 @@ def play_audio():
         print(f"An unexpected error occurred: {e}")
 
 def event_catch(ch):
-    print(ch)
     global play_status, playback_thread, prevCh
 
     index = buttonsDict[ch]
-    prevIndex = buttonsDict[prevCh]
-
     if prevCh == 0:
         play_status[index] = True
     elif prevCh == ch:
         play_status[index] = False
     else:
+        prevIndex = buttonsDict[prevCh]
         play_status[index] = True
         play_status[prevIndex] = False
     
