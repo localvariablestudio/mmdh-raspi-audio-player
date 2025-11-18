@@ -12,9 +12,22 @@ play_status = False
 playback_thread = None  # Track the playback thread
 
 # Pins config
-btn1 = [2, 3]
-GPIO.setup(btn1[0], GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(btn1[1], GPIO.OUT, initial=GPIO.LOW)
+buttons = [
+    [2, 3],
+    [4, 5],
+    [6, 7]
+    # [8, 9],
+    # [10, 11],
+    # [16, 23]
+]
+
+for i in range(len(buttons)):
+    GPIO.setup(buttons[i][0], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(buttons[i][1], GPIO.OUT, initial=GPIO.LOW)    
+
+# btn1 = [2, 3]
+# GPIO.setup(btn1[0], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+# GPIO.setup(btn1[1], GPIO.OUT, initial=GPIO.LOW)
 
 def play_audio():
     """Play audio in a separate thread, checking play_status periodically"""
@@ -50,24 +63,25 @@ def play_audio():
 
 def event_catch(ch):
     print('Button: ', ch, ' activated.')
-    global play_status, playback_thread
+    # global play_status, playback_thread
     
-    play_status = not play_status
-    print('Play status: ', play_status)
-    GPIO.output(btn1[1], play_status)
+    # play_status = not play_status
+    # print('Play status: ', play_status)
+    # GPIO.output(btn1[1], play_status)
     
-    if play_status:
-        # Start playback in a new thread
-        if playback_thread is not None and playback_thread.is_alive():
-            # If a thread is already running, wait for it to finish (should be quick)
-            pass
-        playback_thread = threading.Thread(target=play_audio, daemon=True)
-        playback_thread.start()
-    else:
-        # play_status is False, the playback loop will check this and stop
-        print("Stopping playback...")
+    # if play_status:
+    #     # Start playback in a new thread
+    #     if playback_thread is not None and playback_thread.is_alive():
+    #         # If a thread is already running, wait for it to finish (should be quick)
+    #         pass
+    #     playback_thread = threading.Thread(target=play_audio, daemon=True)
+    #     playback_thread.start()
+    # else:
+    #     # play_status is False, the playback loop will check this and stop
+    #     print("Stopping playback...")
 
-GPIO.add_event_detect(btn1[0], GPIO.FALLING, callback=event_catch, bouncetime=100)
+for i in range(len(buttons)):
+    GPIO.add_event_detect(buttons[i][0], GPIO.FALLING, callback=event_catch, bouncetime=100)
 
 while True:
     pass
