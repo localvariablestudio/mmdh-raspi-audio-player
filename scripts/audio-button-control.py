@@ -77,7 +77,7 @@ def play_audio():
         print(f"An unexpected error occurred: {e}")
 
 def event_catch(ch):
-    global play_status, playback_thread
+    global play_status, playback_thread, prevCh
 
     index = buttonsDict[ch]
     prevIndex = buttonsDict[prevCh]
