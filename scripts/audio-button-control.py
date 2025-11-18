@@ -96,10 +96,6 @@ def event_catch(ch):
     for i in range(len(play_status)):
         GPIO.output(buttons[i][1], play_status[i])
     
-    # play_status = not play_status
-    # print('Play status: ', play_status)
-    # GPIO.output(btn1[1], play_status)
-    
     # if play_status:
     #     # Start playback in a new thread
     #     if playback_thread is not None and playback_thread.is_alive():
