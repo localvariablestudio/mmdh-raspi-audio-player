@@ -8,26 +8,40 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
 # Audio control
-play_status = False
+play_status = [
+    False,
+    False,
+    False,
+    False,
+    False,
+    False
+]
+
 playback_thread = None  # Track the playback thread
 
+prevCh = 0
 # Pins config
 buttons = [
     [2, 3],
     [4, 5],
     [6, 7]
-    # [8, 9],
-    # [10, 11],
-    # [16, 23]
+    [8, 9],
+    [10, 11],
+    [16, 23]
 ]
+
+buttonsDict = {
+    2 : 0,
+    4 : 1,
+    6 : 2,
+    8 : 3,
+    10 : 4,
+    16 : 23,
+}
 
 for i in range(len(buttons)):
     GPIO.setup(buttons[i][0], GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(buttons[i][1], GPIO.OUT, initial=GPIO.LOW)    
-
-# btn1 = [2, 3]
-# GPIO.setup(btn1[0], GPIO.IN, pull_up_down=GPIO.PUD_UP)
-# GPIO.setup(btn1[1], GPIO.OUT, initial=GPIO.LOW)
 
 def play_audio():
     """Play audio in a separate thread, checking play_status periodically"""
@@ -62,8 +76,23 @@ def play_audio():
         print(f"An unexpected error occurred: {e}")
 
 def event_catch(ch):
-    print('Button: ', ch, ' activated.')
-    # global play_status, playback_thread
+    global play_status, playback_thread
+
+    index = buttonsDict[ch]
+    prevIndex = buttonsDict[prevCh]
+
+    if prevCh == 0:
+        play_status[index] = True
+    elif prevCh == ch:
+        play_status[index] = False
+    else:
+        play_status[index] = True
+        play_status[prevIndex] = False
+    
+    prevCh = ch
+
+    for i in range(len(play_status)):
+        GPIO.output(buttons[i][1], play_status[i])
     
     # play_status = not play_status
     # print('Play status: ', play_status)
