@@ -6,6 +6,7 @@ import threading
 # Global GPIO config
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
+GPIO.cleanup()
 
 # Audio control
 play_status = [
