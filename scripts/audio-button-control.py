@@ -92,6 +92,8 @@ def event_catch(ch):
     
     prevCh = ch
 
+    print(play_status)
+
     # for i in range(len(play_status)):
     #     GPIO.output(buttons[i][1], play_status[i])
     
