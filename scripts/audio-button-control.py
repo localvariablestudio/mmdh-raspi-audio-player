@@ -77,6 +77,7 @@ def play_audio():
         print(f"An unexpected error occurred: {e}")
 
 def event_catch(ch):
+    print(ch)
     global play_status, playback_thread, prevCh
 
     index = buttonsDict[ch]
@@ -91,8 +92,6 @@ def event_catch(ch):
         play_status[prevIndex] = False
     
     prevCh = ch
-
-    print(play_status)
 
     # for i in range(len(play_status)):
     #     GPIO.output(buttons[i][1], play_status[i])
