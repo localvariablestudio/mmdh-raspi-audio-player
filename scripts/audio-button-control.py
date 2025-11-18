@@ -80,6 +80,7 @@ def event_catch(ch):
     global play_status, playback_thread, prevCh
 
     index = buttonsDict[ch]
+    print(index)
     if prevCh == 0:
         play_status[index] = True
     elif prevCh == ch:
@@ -91,7 +92,7 @@ def event_catch(ch):
     
     prevCh = ch
 
-    print(play_status)
+    # print(play_status)
 
     for i in range(len(play_status)):
         GPIO.output(buttons[i][1], play_status[i])
