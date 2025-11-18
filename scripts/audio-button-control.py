@@ -42,7 +42,7 @@ buttonsDict = {
 
 for i in range(len(buttons)):
     GPIO.setup(buttons[i][0], GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(buttons[i][1], GPIO.OUT, initial=GPIO.LOW)    
+    GPIO.setup(buttons[i][1], GPIO.OUT, initial=GPIO.UP)    
 
 def play_audio():
     """Play audio in a separate thread, checking play_status periodically"""
