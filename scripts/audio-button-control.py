@@ -78,6 +78,7 @@ def play_audio():
 
 def event_catch(ch):
     global play_status, playback_thread, prevCh
+    print(ch)
 
     index = buttonsDict[ch]
     if prevCh == 0:
