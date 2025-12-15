@@ -37,7 +37,7 @@ buttonsDict = {
     6 : 2,
     8 : 3,
     10 : 4,
-    23 : 16,
+    23 : 5,
 }
 
 for i in range(len(buttons)):
