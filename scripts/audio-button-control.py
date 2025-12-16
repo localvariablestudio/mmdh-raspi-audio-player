@@ -40,16 +40,25 @@ buttonsDict = {
     23 : 5,
 }
 
+tracks = [
+    '/home/control-1/Documents/mmdh-raspi-audio-player//media/01-alberto-kurapel.wav',
+    '/home/control-1/Documents/mmdh-raspi-audio-player//media/02-isabel-parra.wav',
+    '/home/control-1/Documents/mmdh-raspi-audio-player//media/03-mariela-ferreira.wav',
+    '/home/control-1/Documents/mmdh-raspi-audio-player//media/04-osvaldo-torres.wav',
+    '/home/control-1/Documents/mmdh-raspi-audio-player//media/05-patricio-manns.wav',
+    '/home/control-1/Documents/mmdh-raspi-audio-player//media/06-vladimir-vega.wav',
+]
+
 for i in range(len(buttons)):
     GPIO.setup(buttons[i][0], GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(buttons[i][1], GPIO.OUT, initial=GPIO.LOW)    
 
-def play_audio():
+def play_audio(index):
     """Play audio in a separate thread, checking play_status periodically"""
     global play_status
     try:
-        # Open the WAV file
-        f = wave.open('/home/control-1/Documents/mmdh-raspi-audio-player//assets/audio-test-2.wav', 'rb') 
+        # Open the WAV file using the index to select the track
+        f = wave.open(tracks[index], 'rb') 
 
         # Initialize a PCM device for playback
         # 'default' refers to the default sound card and device
@@ -58,12 +67,12 @@ def play_audio():
 
         # Play the audio data
         data = f.readframes(1024)
-        while data and play_status:  # Check play_status in the loop
+        while data and play_status[index]:  # Check play_status[index] in the loop
             out.write(data)
             data = f.readframes(1024)
         
         # Clean up if playback was stopped
-        if not play_status:
+        if not play_status[index]:
             print("Playback stopped by user")
         
         f.close()
@@ -97,16 +106,16 @@ def event_catch(ch):
     for i in range(len(play_status)):
         GPIO.output(buttons[i][1], play_status[i])
     
-    # if play_status:
-    #     # Start playback in a new thread
-    #     if playback_thread is not None and playback_thread.is_alive():
-    #         # If a thread is already running, wait for it to finish (should be quick)
-    #         pass
-    #     playback_thread = threading.Thread(target=play_audio, daemon=True)
-    #     playback_thread.start()
-    # else:
-    #     # play_status is False, the playback loop will check this and stop
-    #     print("Stopping playback...")
+    if play_status[index]:
+        # Start playback in a new thread
+        if playback_thread is not None and playback_thread.is_alive():
+            # If a thread is already running, wait for it to finish (should be quick)
+            pass
+        playback_thread = threading.Thread(target=play_audio, args=(index,), daemon=True)
+        playback_thread.start()
+    else:
+        # play_status is False, the playback loop will check this and stop
+        print("Stopping playback...")
 
 for i in range(len(buttons)):
     GPIO.add_event_detect(buttons[i][0], GPIO.FALLING, callback=event_catch, bouncetime=100)
