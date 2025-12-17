@@ -59,6 +59,9 @@ for i in range(len(buttons)):
 
 def fade_audio_data(data, volume_factor):
     """Apply volume factor to audio data (fade in/out)"""
+    # Clamp volume_factor to valid range [0.0, 1.0]
+    volume_factor = max(0.0, min(1.0, volume_factor))
+    
     if volume_factor >= 1.0:
         return data
     
@@ -85,33 +88,50 @@ def play_audio(index):
         current_playback_device = out
         current_playback_index = index
         
-        # Variables for fade-out
-        fade_start_time = None
-        fade_duration = 0.5  # 500ms fade-out
+        # Variables for fade-in and fade-out
+        fade_in_start_time = time.time()  # Start fade-in immediately
+        fade_out_start_time = None
+        fade_duration = 0.5  # 500ms for both fade-in and fade-out
         
         # Play the audio data
         data = f.readframes(1024)
         while data and play_status[index]:  # Check play_status[index] in the loop
             # Check if this track is no longer the current track (new track started)
             # If so, start fading out
-            if current_playback_index is not None and current_playback_index != index and fade_start_time is None:
-                fade_start_time = time.time()
+            if current_playback_index is not None and current_playback_index != index and fade_out_start_time is None:
+                fade_out_start_time = time.time()
             
-            # Apply fade-out if active
-            if fade_start_time is not None:
-                elapsed = time.time() - fade_start_time
+            # Determine which fade to apply
+            volume_factor = 1.0
+            
+            # Apply fade-out if active (takes priority over fade-in)
+            if fade_out_start_time is not None:
+                elapsed = time.time() - fade_out_start_time
                 if elapsed >= fade_duration:
                     # Fade complete, stop playback
                     break
                 volume_factor = 1.0 - (elapsed / fade_duration)
+            # Apply fade-in if active and not fading out
+            elif fade_in_start_time is not None:
+                elapsed = time.time() - fade_in_start_time
+                if elapsed < fade_duration:
+                    # Still fading in
+                    volume_factor = elapsed / fade_duration
+                else:
+                    # Fade-in complete
+                    fade_in_start_time = None
+                    volume_factor = 1.0
+            
+            # Apply volume factor to audio data
+            if volume_factor < 1.0:
                 data = fade_audio_data(data, volume_factor)
             
             out.write(data)
             data = f.readframes(1024)
         
         # Clean up if playback was stopped
-        if not play_status[index] or fade_start_time is not None:
-            if fade_start_time is not None:
+        if not play_status[index] or fade_out_start_time is not None:
+            if fade_out_start_time is not None:
                 print(f"Track {index} faded out for smooth transition")
             else:
                 print("Playback stopped by user")
