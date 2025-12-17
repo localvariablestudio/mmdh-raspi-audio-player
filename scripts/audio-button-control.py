@@ -23,6 +23,7 @@ play_status = [
 playback_thread = None  # Track the playback thread
 current_playback_device = None  # Track the current playback device
 current_playback_index = None  # Track which track is currently playing
+playback_lock = threading.Lock()  # Lock to prevent simultaneous audio device access
 
 prevCh = 0
 # Pins config
@@ -74,24 +75,28 @@ def fade_audio_data(data, volume_factor):
 
 def play_audio(index):
     """Play audio in a separate thread, checking play_status periodically"""
-    global play_status, current_playback_device, current_playback_index
+    global play_status, current_playback_device, current_playback_index, playback_lock
     try:
         # Check if there's a previous track playing (switching tracks)
-        # If so, wait 500ms for the previous track to fade out completely
+        # If so, wait for the fade-out to complete (500ms) plus a small buffer
+        fade_duration = 0.5  # 500ms for fade-out
         if current_playback_index is not None and current_playback_index != index:
-            time.sleep(0.2)  # 500ms delay between tracks
+            # Wait for fade-out to complete - this ensures the previous track has finished
+            # and closed its device before we open a new one
+            time.sleep(fade_duration + 0.15)  # Wait for fade-out (500ms) + buffer (150ms)
         
         # Open the WAV file using the index to select the track
         f = wave.open(tracks[index], 'rb') 
 
-        # Initialize a PCM device for playback
-        # 'default' refers to the default sound card and device
-        # You can specify a different device using 'hw:CARD=0,DEV=0' format
-        out = alsaaudio.PCM(channels=f.getnchannels(), rate=f.getframerate(), format=alsaaudio.PCM_FORMAT_S16_LE, periodsize=1024, device='default')
-        
-        # Store the current playback device
-        current_playback_device = out
-        current_playback_index = index
+        # Initialize a PCM device for playback with lock to prevent conflicts
+        with playback_lock:
+            # 'default' refers to the default sound card and device
+            # You can specify a different device using 'hw:CARD=0,DEV=0' format
+            out = alsaaudio.PCM(channels=f.getnchannels(), rate=f.getframerate(), format=alsaaudio.PCM_FORMAT_S16_LE, periodsize=1024, device='default')
+            
+            # Store the current playback device
+            current_playback_device = out
+            current_playback_index = index
         
         # Variables for fade-in and fade-out
         fade_in_start_time = time.time()  # Start fade-in immediately
@@ -131,7 +136,14 @@ def play_audio(index):
             if volume_factor < 1.0:
                 data = fade_audio_data(data, volume_factor)
             
-            out.write(data)
+            # Check if we're still the current track before writing (quick check without lock)
+            # If not current, the fade-out logic above will handle stopping
+            try:
+                out.write(data)
+            except (OSError, alsaaudio.ALSAAudioError):
+                # Device may have been closed by another thread, break out of loop
+                break
+            
             data = f.readframes(1024)
         
         # Clean up if playback was stopped
@@ -147,12 +159,17 @@ def play_audio(index):
         GPIO.output(buttons[index][1], play_status[index])
 
         f.close()
-        out.close()
         
-        # Clear references if this was the current playback
-        if current_playback_device == out:
-            current_playback_device = None
-            current_playback_index = None
+        # Close device and clear references with lock
+        with playback_lock:
+            try:
+                out.close()
+            except:
+                pass
+            # Clear references if this was the current playback
+            if current_playback_device == out:
+                current_playback_device = None
+                current_playback_index = None
 
     except alsaaudio.ALSAAudioError as e:
         print(f"Error during audio playback: {e}")
