@@ -76,6 +76,11 @@ def play_audio(index):
     """Play audio in a separate thread, checking play_status periodically"""
     global play_status, current_playback_device, current_playback_index
     try:
+        # Check if there's a previous track playing (switching tracks)
+        # If so, wait 500ms for the previous track to fade out completely
+        if current_playback_index is not None and current_playback_index != index:
+            time.sleep(0.5)  # 500ms delay between tracks
+        
         # Open the WAV file using the index to select the track
         f = wave.open(tracks[index], 'rb') 
 
