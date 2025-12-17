@@ -179,7 +179,7 @@ def play_audio(index):
                 total_sec = int(total_seconds % 60)
                 
                 # Print progress bar (using \r to overwrite the same line)
-                progress_str = f"Track {index} [{bar}] {percentage}% ({current_min:02d}:{current_sec:02d}/{total_min:02d}:{total_sec:02d})"
+                progress_str = f"Track {index + 1} [{bar}] {percentage}% ({current_min:02d}:{current_sec:02d}/{total_min:02d}:{total_sec:02d})"
                 sys.stdout.write('\r' + progress_str)
                 sys.stdout.flush()
                 
