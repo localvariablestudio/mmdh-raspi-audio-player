@@ -2,6 +2,8 @@ import RPi.GPIO as GPIO
 import alsaaudio
 import wave
 import threading
+import struct
+import time
 
 # Global GPIO config
 GPIO.setmode(GPIO.BCM)
@@ -19,6 +21,8 @@ play_status = [
 ]
 
 playback_thread = None  # Track the playback thread
+current_playback_device = None  # Track the current playback device
+current_playback_index = None  # Track which track is currently playing
 
 prevCh = 0
 # Pins config
@@ -53,9 +57,21 @@ for i in range(len(buttons)):
     GPIO.setup(buttons[i][0], GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(buttons[i][1], GPIO.OUT, initial=GPIO.LOW)    
 
+def fade_audio_data(data, volume_factor):
+    """Apply volume factor to audio data (fade in/out)"""
+    if volume_factor >= 1.0:
+        return data
+    
+    # Convert bytes to list of 16-bit signed integers
+    samples = struct.unpack('<' + 'h' * (len(data) // 2), data)
+    # Apply volume factor
+    faded_samples = [int(sample * volume_factor) for sample in samples]
+    # Convert back to bytes
+    return struct.pack('<' + 'h' * len(faded_samples), *faded_samples)
+
 def play_audio(index):
     """Play audio in a separate thread, checking play_status periodically"""
-    global play_status
+    global play_status, current_playback_device, current_playback_index
     try:
         # Open the WAV file using the index to select the track
         f = wave.open(tracks[index], 'rb') 
@@ -64,16 +80,41 @@ def play_audio(index):
         # 'default' refers to the default sound card and device
         # You can specify a different device using 'hw:CARD=0,DEV=0' format
         out = alsaaudio.PCM(channels=f.getnchannels(), rate=f.getframerate(), format=alsaaudio.PCM_FORMAT_S16_LE, periodsize=1024, device='default')
-
+        
+        # Store the current playback device
+        current_playback_device = out
+        current_playback_index = index
+        
+        # Variables for fade-out
+        fade_start_time = None
+        fade_duration = 0.5  # 500ms fade-out
+        
         # Play the audio data
         data = f.readframes(1024)
         while data and play_status[index]:  # Check play_status[index] in the loop
+            # Check if this track is no longer the current track (new track started)
+            # If so, start fading out
+            if current_playback_index is not None and current_playback_index != index and fade_start_time is None:
+                fade_start_time = time.time()
+            
+            # Apply fade-out if active
+            if fade_start_time is not None:
+                elapsed = time.time() - fade_start_time
+                if elapsed >= fade_duration:
+                    # Fade complete, stop playback
+                    break
+                volume_factor = 1.0 - (elapsed / fade_duration)
+                data = fade_audio_data(data, volume_factor)
+            
             out.write(data)
             data = f.readframes(1024)
         
         # Clean up if playback was stopped
-        if not play_status[index]:
-            print("Playback stopped by user")
+        if not play_status[index] or fade_start_time is not None:
+            if fade_start_time is not None:
+                print(f"Track {index} faded out for smooth transition")
+            else:
+                print("Playback stopped by user")
         
         # On play end
         play_status[index] = False
@@ -82,6 +123,11 @@ def play_audio(index):
 
         f.close()
         out.close()
+        
+        # Clear references if this was the current playback
+        if current_playback_device == out:
+            current_playback_device = None
+            current_playback_index = None
 
     except alsaaudio.ALSAAudioError as e:
         print(f"Error during audio playback: {e}")
@@ -91,8 +137,7 @@ def play_audio(index):
         print(f"An unexpected error occurred: {e}")
 
 def event_catch(ch):
-    global play_status, playback_thread, prevCh
-    print(ch)
+    global play_status, playback_thread, prevCh, current_playback_index
 
     index = buttonsDict[ch]
     if prevCh == 0:
@@ -102,12 +147,14 @@ def event_catch(ch):
     else:
         prevIndex = buttonsDict[prevCh]
         play_status[index] = True
+        # When switching tracks, the previous track will detect it's no longer current
+        # and start fading out automatically (checked in play_audio loop)
         play_status[prevIndex] = False
     
     prevCh = ch
 
+    # Print new play status and update buttons' LED
     print(play_status)
-
     for i in range(len(play_status)):
         GPIO.output(buttons[i][1], play_status[i])
     
