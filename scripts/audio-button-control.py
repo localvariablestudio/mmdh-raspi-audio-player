@@ -4,6 +4,7 @@ import wave
 import threading
 import struct
 import time
+import sys
 
 # Global GPIO config
 GPIO.setmode(GPIO.BCM)
@@ -103,6 +104,14 @@ def play_audio(index):
         fade_out_start_time = None
         fade_duration = 0.5  # 500ms for both fade-in and fade-out
         
+        # Progress bar variables
+        total_frames = f.getnframes()
+        frames_read = 0
+        frame_size = 1024  # Number of frames read per iteration
+        sample_rate = f.getframerate()
+        last_progress_update = time.time()
+        progress_update_interval = 0.5  # Update progress bar every 0.5 seconds
+        
         # Play the audio data
         data = f.readframes(1024)
         while data and play_status[index]:  # Check play_status[index] in the loop
@@ -137,14 +146,50 @@ def play_audio(index):
                 data = fade_audio_data(data, volume_factor)
             
             # Check if we're still the current track before writing (quick check without lock)
-            # If not current, the fade-out logic above will handle stopping
+            # If not current, the fade-out logic above will handle handling stopping
             try:
                 out.write(data)
             except (OSError, alsaaudio.ALSAAudioError):
                 # Device may have been closed by another thread, break out of loop
                 break
             
+            # Update progress tracking
+            # Calculate actual frames read from data length
+            bytes_per_frame = f.getsampwidth() * f.getnchannels()
+            frames_in_data = len(data) // bytes_per_frame if bytes_per_frame > 0 else 0
+            frames_read += frames_in_data
+            current_time = time.time()
+            
+            # Update progress bar periodically
+            if current_time - last_progress_update >= progress_update_interval:
+                progress = min(frames_read / total_frames, 1.0) if total_frames > 0 else 0.0
+                current_seconds = frames_read / sample_rate if sample_rate > 0 else 0
+                total_seconds = total_frames / sample_rate if sample_rate > 0 else 0
+                
+                # Create progress bar (40 characters wide)
+                bar_width = 40
+                filled = int(bar_width * progress)
+                bar = '=' * filled + '-' * (bar_width - filled)
+                percentage = int(progress * 100)
+                
+                # Format time display
+                current_min = int(current_seconds // 60)
+                current_sec = int(current_seconds % 60)
+                total_min = int(total_seconds // 60)
+                total_sec = int(total_seconds % 60)
+                
+                # Print progress bar (using \r to overwrite the same line)
+                progress_str = f"Track {index} [{bar}] {percentage}% ({current_min:02d}:{current_sec:02d}/{total_min:02d}:{total_sec:02d})"
+                sys.stdout.write('\r' + progress_str)
+                sys.stdout.flush()
+                
+                last_progress_update = current_time
+            
             data = f.readframes(1024)
+        
+        # Print newline to complete progress bar line
+        sys.stdout.write('\n')
+        sys.stdout.flush()
         
         # Clean up if playback was stopped
         if not play_status[index] or fade_out_start_time is not None:
