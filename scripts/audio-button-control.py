@@ -78,6 +78,7 @@ def play_audio(index):
         # On play end
         play_status[index] = False
         print(play_status)
+        GPIO.output(buttons[index][1], play_status[index])
 
         f.close()
         out.close()
