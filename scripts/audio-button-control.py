@@ -79,7 +79,7 @@ def play_audio(index):
         # Check if there's a previous track playing (switching tracks)
         # If so, wait 500ms for the previous track to fade out completely
         if current_playback_index is not None and current_playback_index != index:
-            time.sleep(0.5)  # 500ms delay between tracks
+            time.sleep(0.2)  # 500ms delay between tracks
         
         # Open the WAV file using the index to select the track
         f = wave.open(tracks[index], 'rb') 
