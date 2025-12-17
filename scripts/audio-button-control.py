@@ -75,8 +75,9 @@ def play_audio(index):
         if not play_status[index]:
             print("Playback stopped by user")
         
-        # When finished playing
+        # On play end
         play_status[index] = False
+        print(play_status)
 
         f.close()
         out.close()
