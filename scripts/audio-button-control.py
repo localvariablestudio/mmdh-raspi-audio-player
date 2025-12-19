@@ -88,7 +88,7 @@ def set_vol(vol):
 set_vol(system_vol)
 
 def vol_event_catch(ch):
-    global mixer
+    global mixer, system_vol
     current_volume_list = int(mixer.getvolume()[0])
     if ch == vol_down:
         system_vol = system_vol - 10
