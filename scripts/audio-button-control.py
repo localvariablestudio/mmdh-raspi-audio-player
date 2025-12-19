@@ -69,7 +69,7 @@ GPIO.setup(vol_up, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 def set_vol():
     try:
         m = alsaaudio.Mixer('Master')
-        m.setvolume(50)
+        m.setvolume(vol)
     except alsaaudio.ALSAAudioError:
         print(f"Error: Unable to find mixer control '{mixer_name}'")
         print("Try running 'amixer' in your terminal to list available controls and their names (e.g., 'PCM').")
@@ -78,7 +78,7 @@ def set_vol():
         print(f"An unexpected error occurred: {e}")
         return None
 
-set_vol()
+set_vol(10)
 
 def vol_event_catch(ch):
     print(ch)
