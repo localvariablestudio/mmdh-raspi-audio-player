@@ -87,19 +87,9 @@ def set_vol(vol):
 set_vol(10)
 
 def vol_event_catch(ch):
-    print(ch)
-    # Get mixer volume
-    try:
-        m = alsaaudio.Mixer('Master')
-        current_volume_list = m.getvolume()
-        print(current_volume_list)
-    except alsaaudio.ALSAAudioError:
-        print(f"Error: Unable to find mixer control '{mixer_name}'")
-        print("Try running 'amixer' in your terminal to list available controls and their names (e.g., 'PCM').")
-        return None
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        return None
+    global mixer
+    current_volume_list = mixer.getvolume()
+    print(current_volume_list)
 
 
 GPIO.add_event_detect(vol_up, GPIO.FALLING, callback=vol_event_catch, bouncetime=100)
