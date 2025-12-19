@@ -71,7 +71,7 @@ def vol_event_catch(ch):
     # Get mixer volume
     try:
         m = alsaaudio.Mixer('Master')
-        current_volume_list = m.getVolume()
+        current_volume_list = m.getvolume()
         print(current_volume_list)
     except alsaaudio.ALSAAudioError:
         print(f"Error: Unable to find mixer control '{mixer_name}'")
