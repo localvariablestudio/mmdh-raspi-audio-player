@@ -59,7 +59,8 @@ for i in range(len(buttons)):
     GPIO.setup(buttons[i][0], GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(buttons[i][1], GPIO.OUT, initial=GPIO.LOW)    
 
-# Volume buttons
+# Volume control
+system_vol = 50
 vol_down = 14
 vol_up = 15
 
@@ -84,11 +85,20 @@ def set_vol(vol):
     global mixer
     mixer.setvolume(vol)
 
-set_vol(10)
+set_vol(system_vol)
 
 def vol_event_catch(ch):
     global mixer
-    current_volume_list = mixer.getvolume()
+    current_volume_list = int(mixer.getvolume()[0])
+    if ch == vol_down:
+        system_vol = system_vol - 10
+        if system_vol < 0:
+            system_vol = 0
+    elif ch == vol_up:
+        system_vol = system_vol + 10
+        if system_vol > 100:
+            system_vol = 100
+    set_vol(system_vol)
     print(current_volume_list)
 
 
