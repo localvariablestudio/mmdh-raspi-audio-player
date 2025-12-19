@@ -68,7 +68,7 @@ GPIO.setup(vol_up, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 # Define system mixer
 def get_mixer():
-    try
+    try:
         return alsaaudio.Mixer('Master')
     except alsaaudio.ALSAAudioError:
         print(f"Error: Unable to find mixer control '{mixer_name}'")
