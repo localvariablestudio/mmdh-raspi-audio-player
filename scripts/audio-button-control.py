@@ -66,7 +66,7 @@ vol_up = 15
 GPIO.setup(vol_down, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(vol_up, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-def set_vol():
+def set_vol(vol):
     try:
         m = alsaaudio.Mixer('Master')
         m.setvolume(vol)
