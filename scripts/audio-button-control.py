@@ -69,11 +69,9 @@ GPIO.setup(vol_down, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(vol_up, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 # Define system mixer
-print(alsaaudio.mixers())
-
 def get_mixer():
     try:
-        return alsaaudio.Mixer('Capture')
+        return alsaaudio.Mixer(control="PCM", device="default")
     except alsaaudio.ALSAAudioError:
         print(f"Error: Unable to find mixer control '{mixer_name}'")
         print("Try running 'amixer' in your terminal to list available controls and their names (e.g., 'PCM').")
