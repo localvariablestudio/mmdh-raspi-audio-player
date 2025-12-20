@@ -73,7 +73,7 @@ print(alsaaudio.mixers())
 
 def get_mixer():
     try:
-        return alsaaudio.Mixer(control="PCM", device="default")
+        return alsaaudio.Mixer('Master')
     except alsaaudio.ALSAAudioError:
         print(f"Error: Unable to find mixer control '{mixer_name}'")
         print("Try running 'amixer' in your terminal to list available controls and their names (e.g., 'PCM').")
