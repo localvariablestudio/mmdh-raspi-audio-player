@@ -69,6 +69,8 @@ GPIO.setup(vol_down, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(vol_up, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 # Define system mixer
+print(alsaaudio.mixers())
+
 def get_mixer():
     try:
         return alsaaudio.Mixer(control="PCM", device="default")
