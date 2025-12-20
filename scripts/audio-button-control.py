@@ -67,6 +67,8 @@ vol_up = 14
 GPIO.setup(vol_down, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(vol_up, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
+print(alsaaudio.mixers())
+
 # Define system mixer
 def get_mixer():
     try:
