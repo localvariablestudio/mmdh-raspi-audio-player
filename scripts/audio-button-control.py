@@ -4,6 +4,7 @@ import wave
 import threading
 import struct
 import time
+import math
 
 # Global GPIO config
 GPIO.setmode(GPIO.BCM)
@@ -92,13 +93,13 @@ def vol_event_catch(ch):
     current_volume_list = int(mixer.getvolume()[0])
     if ch == vol_down:
         system_vol = system_vol - 10
-        if system_vol < 0:
-            system_vol = 0
+        if system_vol < 10:
+            system_vol = 10
     elif ch == vol_up:
         system_vol = system_vol + 10
         if system_vol > 100:
             system_vol = 100
-    set_vol(system_vol)
+    set_vol(100 * marh.log10(system_vol / 100))
     print(current_volume_list)
 
 
