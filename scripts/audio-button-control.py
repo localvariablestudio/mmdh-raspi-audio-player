@@ -61,8 +61,8 @@ for i in range(len(buttons)):
 
 # Volume control
 system_vol = 50
-vol_down = 14
-vol_up = 15
+vol_down = 15
+vol_up = 14
 
 GPIO.setup(vol_down, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(vol_up, GPIO.IN, pull_up_down=GPIO.PUD_UP)
