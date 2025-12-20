@@ -99,7 +99,8 @@ def vol_event_catch(ch):
         system_vol = system_vol + 10
         if system_vol > 100:
             system_vol = 100
-    set_vol(int(100 * math.log10(system_vol / 100)))
+    # set_vol(int(100 * math.log10(system_vol / 100)))
+    set_vol(system_vol)
     print(current_volume_list)
 
 
